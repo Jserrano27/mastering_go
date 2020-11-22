@@ -6,10 +6,13 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -146,4 +149,112 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	/////////////////////////////////
+	// Writing to Files using a Buffer in Memory
+	// Go Playground: https://play.golang.org/p/7U3g_B33aui
+	/////////////////////////////////
+
+	// Opening the file for writing
+	file, err := os.OpenFile("my_file.txt", os.O_WRONLY|os.O_CREATE, 0644)
+	// error handling
+	if err != nil {
+		log.Fatal(err)
+	}
+	// defer closing the file
+	defer file.Close()
+
+	// Creating a buffered writer from the file variable using bufio.NewWriter()
+	bufferedWriter := bufio.NewWriter(file)
+
+	// declaring a byte slice
+	bs := []byte{97, 98, 99}
+
+	// writing the byte slice to the buffer in memory
+	bytesWritten, err := bufferedWriter.Write(bs)
+
+	// error handling
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Bytes written to buffer (not file): %d\n", bytesWritten)
+	// => 2019/10/21 16:30:59 Bytes written to buffer (not file): 3
+
+	// checking the available buffer
+	bytesAvailable := bufferedWriter.Available()
+	log.Printf("Bytes available in buffer: %d\n", bytesAvailable)
+	// => 2019/10/21 16:30:59 Bytes available in buffer: 4093
+
+	// writing a string (not a byte slice) to the buffer in memory
+	bytesWritten, err = bufferedWriter.WriteString("\nJust a random string")
+
+	// error handling
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// checking how much data is stored in buffer, just  waiting to be written to disk
+	unflushedBufferSize := bufferedWriter.Buffered()
+	log.Printf("Bytes buffered: %d\n", unflushedBufferSize)
+	// -> 24 (3 bytes in the byte slice + 21 runes in the string, each rune is 1 byte)
+
+	// The bytes have been written to buffer, not yet to file.
+	// Writing from buffer to file.
+	bufferedWriter.Flush()
+
+	/////////////////////////////////
+	// Reading Files in Go
+	// Go Playground: https://play.golang.org/p/LJnTSVfaJW_R
+	/////////////////////////////////
+
+	//** READING INTO A BYTE SLICE USING io.ReadFull() **//
+
+	// Opening the file in read-only mode. The file must exist (in the current working directory)
+	// Use a valid path!
+	file, err := os.Open("test.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	// declaring a byte slice and initializing it with a length of 2
+	byteSlice := make([]byte, 2)
+
+	// io.ReadFull() returns an error if the file is smaller than the byte slice.
+	// it reads the file into the byte slice up to its length
+	numberBytesRead, err := io.ReadFull(file, byteSlice)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Number of bytes read: %d\n", numberBytesRead)
+	log.Printf("Data read: %s\n", byteSlice)
+
+	fmt.Println(strings.Repeat("#", 20))
+
+	//** READING WHOLE FILE INTO A BYTESLICE USING ioutil.ReadAll() **//
+
+	// Opening another file (from the current working directory)
+	file, err = os.Open("main.go")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// ioutil.ReadAll() reads every byte from the file and return a slice of unknown size
+	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("Data as string: %s\n", data)
+	fmt.Println("Number of bytes read:", len(data))
+
+	//** READING WHOLE FILE INTO MEMORY USING ioutil.ReadFile() **//
+
+	// ioutil.ReadFile() reads a file into byte slice
+	// this function handles opening and closing the file.
+	data, err = ioutil.ReadFile("test.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Data read: %s\n", data)
 }
