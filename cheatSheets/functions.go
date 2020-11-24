@@ -90,6 +90,17 @@ func personInformation(age int, names ...string) string {
 	return returnString
 }
 
+// An anonymous function is a function which doesn’t contain any name and is declared inline using a function literal.
+// Anonymous functions can be used closures.
+
+// function that takes an int as an argument and returns another function that returns an int
+func increment(x int) func() int {
+	return func() int {
+		x++
+		return x
+	}
+}
+
 func main() {
 
 	// calling variadic functions
@@ -108,4 +119,21 @@ func main() {
 
 	info := personInformation(35, "Wolfgang", "Amadeus", "Mozart")
 	fmt.Println(info) // => Age: 35, Full Name:Wolfgang Amadeus Mozart
+
+	// a defer statement defers or postpones the execution of a function until the surrounding function returns.
+
+	// by deferring foo() it will execute it just before exiting the surrounding function which is main()
+	defer foo()
+	bar()
+
+	// declaring an anonymous functions
+	func(msg string) {
+		fmt.Println(msg)
+	}("I'm an anonymous function!") // calling the anonymous function
+
+	// calling the increment function. It returns an anonymous function
+	a := increment(10)
+	fmt.Println(a())
+	fmt.Println(a())
+	fmt.Println(a())
 }
