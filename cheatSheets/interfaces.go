@@ -67,4 +67,36 @@ func main() {
 
 	a := c1.area()
 	fmt.Println("Circle Area:", a)
+
+	// declaring an interface value that holds a circle type value
+	var s shape = circle{radius: 2.5}
+
+	fmt.Printf("%T\n", s) //interface dynamic type is circle
+
+	// no direct access to interface's dynamic values
+	// s.volume() -> error
+
+	// there is access only to the methods that are defined inside the interface
+	fmt.Printf("Circle Area:%v\n", s.area())
+
+	// an interface value hides its dynamic value.
+	// use type assertion to extract and return the dynamic value of the interface value.
+	fmt.Printf("Sphere Volume:%v\n", s.(circle).volume())
+
+	// checking if the assertion succeded or not
+	ball, ok := s.(circle)
+	if ok == true {
+		fmt.Printf("Ball Volume:%v\n", ball.volume())
+	}
+
+	//** TYPE SWITCHES **//
+
+	// it permits several type assertions in series
+	switch value := s.(type) {
+	case circle:
+		fmt.Printf("%#v has circle type\n", value)
+	case rectangle:
+		fmt.Printf("%#v has rectangle type\n", value)
+
+	}
 }
