@@ -96,12 +96,12 @@ func main() {
 		fmt.Printf("Factorial of %d is %d\n", i, <-ch)
 	}
 
-	/////////////////////////////////
+	// ///////////////////////////////
 	// Unbuffered Channels
 	// Go Playground: https://play.golang.org/p/_44csjQDJvM
-	/////////////////////////////////
+	// ///////////////////////////////
 
-	c1 := make(chan int) //unbuffered channel
+	c1 := make(chan int) // unbuffered channel
 
 	// Launching a goroutine
 	go func(c chan int) {
@@ -122,17 +122,17 @@ func main() {
 
 	// After running the program we notice that the sender (the func goroutine) blocks on the channel
 	// until the receiver (the main goroutine) receives the data from the channel.
-	//** EXPECTED OUTPUT: **//
+	// ** EXPECTED OUTPUT: **//
 	// main goroutine sleeps for 2 seconds
 	// func goroutine starts sending data into the channel
 	// main goroutine starts receiving data
 	// main goroutine received data: 10
 	// func goroutine after sending data into the channel
 
-	/////////////////////////////////
+	// ///////////////////////////////
 	// Buffered Channels
 	// Go Playground: https://play.golang.org/p/1wwkXh4dcs3
-	/////////////////////////////////
+	// ///////////////////////////////
 
 	// Declaring a buffered channel.
 	c1 := make(chan int, 3)
@@ -150,7 +150,7 @@ func main() {
 		// closing the buffered channel.
 		close(c)
 
-	}(c1) //calling the anonymous func and passing c1 as argument
+	}(c1) // calling the anonymous func and passing c1 as argument
 
 	fmt.Println("main goroutine sleeps 2 seconds")
 	time.Sleep(time.Second * 2)
@@ -176,4 +176,46 @@ func main() {
 	// Sending a value into a closed channel will panic.
 	// c1 <- 10 // => panic: send on closed channel
 
+	// ///////////////////////////////
+	// The select Statement
+	// Go Playground: https://play.golang.org/p/6qRtwfSPzef
+	// ///////////////////////////////
+
+	// The `select` statement lets a goroutine wait on multiple communication operations.
+	// A select blocks until one of its cases can run, then it executes that case.
+	// Select is only used with channels.
+
+	// declaring 2 channels
+	c1 := make(chan string)
+	c2 := make(chan string)
+
+	// starting the first goroutine using an anonymous function
+	go func() {
+		time.Sleep(2 * time.Second)
+
+		// sending a message into the channel
+		c1 <- "Hello!"
+	}()
+
+	// starting the second goroutine using an anonymous function
+	go func() {
+		time.Sleep(1 * time.Second)
+
+		// sending a message into the channel
+		c2 <- "Salut!"
+	}()
+
+	// using select to wait on both goroutines
+	for i := 0; i < 2; i++ {
+		select {
+		case msg1 := <-c1:
+			fmt.Println("Received", msg1)
+		case msg2 := <-c2:
+			fmt.Println("Received", msg2)
+
+		}
+	}
+
+	// Basic sends and receives on channels are blocking.
+	// However, we can use `select` with a `default` clause to implement non-blocking channels.
 }
